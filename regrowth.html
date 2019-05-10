@@ -9,6 +9,7 @@
   <style>
     #canvas {
       border: 2px dotted black;
+      margin: auto;
     }
 
     #canvas:hover {
@@ -18,9 +19,11 @@
 </head>
 
 <body>
-
-  <label>Wand of Regrowth level: <input type="number" min="0" max="15" value="0" id="wand_level"></label>
-  Maximum # of high grass created: <output for="wand_level" id="max_high_grass"></output>
+  <p>This tool helps you farm dewdrops and seeds with a Wand of Regrowth.</p>
+  <p>The little number inside each tile equals the number of high grass patches that will spawn when you zap that tile.</p>
+  <p>Click on a tile to edit the dungeon layout.</p>
+  <label>Wand of Regrowth upgrade level: <input type="number" min="0" max="15" value="0" id="wand_level"></label>
+  <p>Maximum # of high grass spawnable: <output for="wand_level" id="max_high_grass"></output></p>
   <div class="canvas-wrapper">
     <canvas id="canvas"></canvas>
   </div>
@@ -35,19 +38,21 @@ const TileType = Object.freeze({
 });
 
 const tile_preset = [
-  '                 0000000 0             0 ',
-  '               0 0000000 0000000 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '                 0             0 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '                 0000000 0000000 0000000 ',
-  '             00  0000000 0000000 0000000 ',
-  '0            00  0000000 0000000 0000000 ',
-  '00               0000000 0000000 0000000 ',
-  '000              0000000 0000000       0 ',
+  '                 00000000 0               0 ',
+  '               0 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 0               0 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '                 00000000 00000000 00000000 ',
+  '0                00000000 00000000 00000000 ',
+  '00           00  00000000 00000000 00000000 ',
+  '000          00  00000000 00000000  0000000 ',
+  '0000             00000000 000000000  000000 ',
+  '00000            00000000 0000000000 000000 ',
 ];
 
 class Tile {
