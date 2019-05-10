@@ -54,6 +54,7 @@ class Tile {
   constructor(type = TileType.WALL) {
     this.type = type;
     this.mistAmount = 0;
+    this.mistAmountNext = 0;
   }
 
   isMistSpreadable() { return this.type !== TileType.WALL; }
@@ -117,24 +118,28 @@ class GameMap {
       throw new Error(`({x}, {y}) is outside bounds!`);
 
     this.getTile_(x, y).mistAmount = initialAmount;
+    let searchXMin = Math.max(0, x - 1), searchXMax = Math.min(this.mapWidth_ - 1, x + 1);
+    let searchYMin = Math.max(0, y - 1), searchYMax = Math.min(this.mapHeight_ - 1, y + 1);
     let isMistRemaining = true;
 
     while (isMistRemaining) {
-      for (const [y, row] of this.tiles_.entries()) {
-        for (const [x, tile] of row.entries()) {
+      // For each tile, compute mistAmountNext (amount of mist that will be present on the next turn)
+      for (let x = searchXMin; x <= searchXMax; ++x) {
+        for (let y = searchYMin; y <= searchYMax; ++y) {
+          const tile = this.getTile_(x, y);
           if (!tile.isMistSpreadable())
             continue;
 
+          // This tile
+          let spreadableTileCount = 1;
+          let totalMistAmountInAdjacentTiles = tile.mistAmount;
+
           const candidateCoords = [
-            [x, y],     // center
             [x - 1, y], // left
             [x + 1, y], // right
             [x, y - 1], // above
             [x, y + 1], // below
           ];
-
-          let spreadableTileCount = 0;
-          let totalMistAmountInAdjacentTiles = 0;
 
           for (const [cx, cy] of candidateCoords) {
             if (!this.isOutsideMap(cx, cy) && this.getTile_(cx, cy).isMistSpreadable()) {
@@ -147,21 +152,40 @@ class GameMap {
         }
       }
 
+      let affectedXMin = this.mapWidth_, affectedXMax = -1;
+      let affectedYMin = this.mapHeight_, affectedYMax = -1;
       isMistRemaining = false;
-      for (const row of this.tiles_) {
-        for (const tile of row) {
+
+      // Update mistAmount
+      for (let x = searchXMin; x <= searchXMax; ++x) {
+        for (let y = searchYMin; y <= searchYMax; ++y) {
+          const tile = this.getTile_(x, y);
           if (!tile.isMistSpreadable())
             continue;
 
-          if ((tile.mistAmount = tile.mistAmountNext))
-            isMistRemaining = true;
+          tile.mistAmount = tile.mistAmountNext;
+          if (tile.mistAmount <= 0)
+            continue;
+
+          // Postcondition: This tile has mist
+          isMistRemaining = true;
+          affectedXMin = Math.min(affectedXMin, x);
+          affectedXMax = Math.max(affectedXMax, x);
+          affectedYMin = Math.min(affectedYMin, y);
+          affectedYMax = Math.max(affectedYMax, y);
 
           if (tile.mistAmount > 9)
             tile.type = TileType.HIGH_GRASS;
-          else if (tile.mistAmount > 0 && tile.type !== TileType.HIGH_GRASS)
+          else if (tile.type !== TileType.HIGH_GRASS)
             tile.type = TileType.GRASS;
         }
       }
+
+      // Set search region for next turn
+      searchXMin = Math.max(0, affectedXMin - 1);
+      searchXMax = Math.min(this.mapWidth_ - 1, affectedXMax + 1);
+      searchYMin = Math.max(0, affectedYMin - 1);
+      searchYMax = Math.min(this.mapHeight_ - 1, affectedYMax + 1);
     }
 
     let grassCount = 0;
@@ -222,7 +246,7 @@ function updateMapDisplay() {
 
   requestAnimationFrame(() => {
     let maxHighGrassCount = 0;
-
+    let x = 1, y = 2;
     for (let x = 0; x < gameMap.getWidth(); ++x) {
       for (let y = 0; y < gameMap.getHeight(); ++y) {
         if (gameMap.getTileType(x, y) != TileType.WALL) {
