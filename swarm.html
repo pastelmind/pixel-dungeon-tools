@@ -192,47 +192,65 @@ function getWeaponDamageDistribution(weapon, upgradeLevel, strength, isHuntress)
 }
 
 
-/**
- * Simulates killing a Swarm of Flies, using a weapon with the given damage
- * distribution.
- */
-function simulateFlyFarming(damageDist, swarmHp = 80, generation = 0) {
-  if (swarmHp <= 0)
-    throw new Error(`Swarm is already dead at ${swarmHp} HP`);
-
-  const result = { hits: 1, kills: 0, potions: 0, };
-
-  for (const [damage, chance] of damageDist) {
-    const swarmHpNew = swarmHp - damage;
-
-    if (swarmHpNew <= 0) {
-      // Swarm is killed
-      const potionDropChance = 1 / (5 * (generation + 1));
-      result.kills += chance;
-      result.potions += chance * potionDropChance;
-    }
-    else if (swarmHpNew >= 2) {
-      // Swarm splits in two
-      const swarm2Hp = Math.floor(swarmHpNew / 2);
-      const swarm1Hp = swarmHpNew - swarm2Hp;
-
-      const swarm1Result = simulateFlyFarming(damageDist, swarm1Hp, generation + 1);
-      const swarm2Result = simulateFlyFarming(damageDist, swarm2Hp, generation + 1);
-
-      result.hits += chance * (swarm1Result.hits + swarm2Result.hits);
-      result.kills += chance * (swarm1Result.kills + swarm2Result.kills);
-      result.potions += chance * (swarm1Result.potions + swarm2Result.potions);
-    }
-    else {
-      // Swarm will be killed on next attack
-      const nextResult = simulateFlyFarming(damageDist, swarmHpNew, generation);
-      result.hits += chance * nextResult.hits;
-      result.kills += chance * nextResult.kills;
-      result.potions += chance * nextResult.potions;
-    }
+class SwarmOfFliesFarmingSimulator {
+  constructor(damageDist) {
+    this.damageDist_ = damageDist;
+    this.resultCache_ = new Map;
   }
 
-  return result;
+  /**
+   * Simulates killing a Swarm of Flies, using the damage distribution used to
+   * instantiate this object.
+   */
+  simulate(swarmHp = 80, generation = 0) {
+    if (swarmHp <= 0)
+      throw new Error(`Swarm is already dead at ${swarmHp} HP`);
+
+    let swarmHpCache = this.resultCache_.get(swarmHp);
+    if (swarmHpCache && swarmHpCache.has(generation))
+      return swarmHpCache.get(generation);
+
+    const result = { hits: 1, kills: 0, potions: 0, };
+
+    for (const [damage, chance] of this.damageDist_) {
+      if (damage <= 0)
+        throw new Error(`Damage must be greater than 0; ${damage} was found.`);
+
+      const swarmHpNew = swarmHp - damage;
+
+      if (swarmHpNew <= 0) {
+        // Swarm is killed
+        const potionDropChance = 1 / (5 * (generation + 1));
+        result.kills += chance;
+        result.potions += chance * potionDropChance;
+      }
+      else if (swarmHpNew >= 2) {
+        // Swarm splits in two
+        const swarm2Hp = Math.floor(swarmHpNew / 2);
+        const swarm1Hp = swarmHpNew - swarm2Hp;
+
+        const swarm1Result = this.simulate(swarm1Hp, generation + 1);
+        const swarm2Result = this.simulate(swarm2Hp, generation + 1);
+
+        result.hits += chance * (swarm1Result.hits + swarm2Result.hits);
+        result.kills += chance * (swarm1Result.kills + swarm2Result.kills);
+        result.potions += chance * (swarm1Result.potions + swarm2Result.potions);
+      }
+      else {
+        // Swarm will be killed on next attack
+        const nextResult = this.simulate(swarmHpNew, generation);
+        result.hits += chance * nextResult.hits;
+        result.kills += chance * nextResult.kills;
+        result.potions += chance * nextResult.potions;
+      }
+    }
+
+    // Cache results
+    this.resultCache_.set(swarmHp, swarmHpCache = this.resultCache_.get(swarmHp) || new Map);
+    swarmHpCache.set(generation, result);
+
+    return result;
+  }
 }
 
 
@@ -256,14 +274,15 @@ document.getElementById('swarm_form').addEventListener('change', event => {
 
   for (let weaponUpgrade = 0; weaponUpgrade <= 15; ++weaponUpgrade) {
     const damageDist = getWeaponDamageDistribution(weapon, weaponUpgrade, strength, isHuntress);
-    const sim = simulateFlyFarming(damageDist);
+    const simulator = new SwarmOfFliesFarmingSimulator(damageDist);
+    const simResult = simulator.simulate();
 
     const damageValues = Array.from(damageDist.keys());
-    sim.minDamage = Math.min(...damageValues);
-    sim.maxDamage = Math.max(...damageValues);
-    sim.weaponUpgrade = weaponUpgrade;
+    simResult.minDamage = Math.min(...damageValues);
+    simResult.maxDamage = Math.max(...damageValues);
+    simResult.weaponUpgrade = weaponUpgrade;
 
-    results.push(sim);
+    results.push(simResult);
   }
 
   let tableHtml = '<table>'
@@ -271,10 +290,9 @@ document.getElementById('swarm_form').addEventListener('change', event => {
     + '<th>Weapon Upgrades</th>'
     + '<th>Damage</th>'
     + '<th># of Attacks</th>'
-    + '<th># of SoFs killed</th>'
-    + '<th># of Potions dropped</th>'
-    + '<th>Potions / Kill</th>'
-    + '<th>Potions / Hit</th>'
+    + '<th># of Splits</th>'
+    + '<th># of Potions Dropped</th>'
+    + '<th># of Attacks to Get a Potion</th>'
     + '</tr>';
 
   for (const sim of results) {
@@ -282,10 +300,9 @@ document.getElementById('swarm_form').addEventListener('change', event => {
       + '<td>' + sim.weaponUpgrade + '</td>'
       + '<td>' + sim.minDamage + '-' + sim.maxDamage + '</td>'
       + '<td>' + sim.hits.toFixed(2) + '</td>'
-      + '<td>' + sim.kills.toFixed(2) + '</td>'
+      + '<td>' + (sim.kills - 1).toFixed(2) + '</td>'
       + '<td>' + sim.potions.toFixed(3) + '</td>'
-      + '<td>' + (sim.potions / sim.kills).toFixed(3) + '</td>'
-      + '<td>' + (sim.potions / sim.hits).toFixed(4) + '</td>'
+      + '<td>' + (sim.hits / sim.potions).toFixed(2) + '</td>'
       + '</tr>';
   }
 
