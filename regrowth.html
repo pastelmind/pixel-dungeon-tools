@@ -139,17 +139,35 @@ class GameMap {
           let spreadableTileCount = 1;
           let totalMistAmountInAdjacentTiles = tile.mistAmount;
 
-          const candidateCoords = [
-            [x - 1, y], // left
-            [x + 1, y], // right
-            [x, y - 1], // above
-            [x, y + 1], // below
-          ];
-
-          for (const [cx, cy] of candidateCoords) {
-            if (!this.isOutsideMap(cx, cy) && this.getTile_(cx, cy).isMistSpreadable()) {
+          if (x - 1 >= 0) {
+            const leftTile = this.getTile_(x - 1, y);
+            if (leftTile.isMistSpreadable()) {
               ++spreadableTileCount;
-              totalMistAmountInAdjacentTiles += this.getTile_(cx, cy).mistAmount;
+              totalMistAmountInAdjacentTiles += leftTile.mistAmount;
+            }
+          }
+
+          if (x + 1 < this.mapWidth_) {
+            const rightTile = this.getTile_(x + 1, y);
+            if (rightTile.isMistSpreadable()) {
+              ++spreadableTileCount;
+              totalMistAmountInAdjacentTiles += rightTile.mistAmount;
+            }
+          }
+
+          if (y - 1 >= 0) {
+            const aboveTile = this.getTile_(x, y - 1);
+            if (aboveTile.isMistSpreadable()) {
+              ++spreadableTileCount;
+              totalMistAmountInAdjacentTiles += aboveTile.mistAmount;
+            }
+          }
+
+          if (y + 1 < this.mapHeight_) {
+            const belowTile = this.getTile_(x, y + 1);
+            if (belowTile.isMistSpreadable()) {
+              ++spreadableTileCount;
+              totalMistAmountInAdjacentTiles += belowTile.mistAmount;
             }
           }
 
