@@ -1,17 +1,4 @@
----
-layout: post
-title: Wand of Regrowth Simulator
----
-<style>
-  #canvas {
-    border: 2px dotted black;
-    margin: auto;
-  }
-
-  #canvas:hover {
-    cursor: pointer;
-  }
-</style>
+# Wand of Regrowth Simulator
 
 This tool helps you farm dewdrops and seeds with a Wand of Regrowth.
 
@@ -24,7 +11,7 @@ Click on a tile to edit the dungeon layout.
 Maximum # of high grass spawnable: <output for="wand_level" id="max_high_grass"></output>
 
 <div class="canvas-wrapper">
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" style="border: 2px dotted black; margin: auto;"></canvas>
 </div>
 
 <script>
@@ -248,6 +235,10 @@ const gameMap = new GameMap;
 //
 //   return {x: maxX, y: maxY, highGrassCount: maxHighGrassCount, grassCount: maxGrassCount};
 // }
+
+const style_tag = document.createElement('style');
+style_tag.innerHTML = '#canvas:hover { cursor: pointer; }';
+document.head.appendChild(style_tag);
 
 const TILE_SIZE = 20;
 /** @type {HTMLCanvasElement} */
