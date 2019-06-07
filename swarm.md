@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+# Fly Farming Simulator
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Fly Farming Simulator</title>
+<template class="style-placeholder">
   <style>
     #strength {
       width: 3em;
@@ -28,34 +23,37 @@
       background-color: #ddd;
     }
   </style>
-</head>
+</template>
 
-<body>
-  <p>This tool estimates the number of Potions of Healing you can get by killing a Swarm of Flies.</p>
-  <p>It makes the following assumptions:</p>
-  <ul>
-    <li>Initially, the Swarm of Flies has maximum HP (80).</li>
-    <li>There is always enough room for the Swarm of Flies to split every time.</li>
-    <li>The player uses a single weapon to attack the Swarm until it and all of its clones are dead.</li>
-    <li>The player has no weapon or armor enchantments, or any damage modifiers other than your Strength and weapon upgrades.</li>
-  </ul>
+This tool estimates the number of Potions of Healing you can get by killing a Swarm of Flies.
 
-  <fieldset id="swarm_form">
-    <legend>Parameters</legend>
-    <div>
-      <label>Your strength: <input id="strength" type="number" min="0" max="20" value="10"> points</label>
-    </div>
-    <div>
-      <label>Weapon: <select id="weapons"></select></label>
-    </div>
-    <div>
-      <label><input id="is_huntress" type="checkbox"> Is Huntress?</label>
-    </div>
-  </fieldset>
+It makes the following assumptions:
 
-  <div id="output_table"></div>
+* Initially, the Swarm of Flies has maximum HP (80).
+* There is always enough room for the Swarm of Flies to split every time.
+* The player uses a single weapon to attack the Swarm until it and all of its clones are dead.
+* The player has no weapon or armor enchantments, or any damage modifiers other than your Strength and weapon upgrades.
+
+<fieldset id="swarm_form">
+  <legend>Parameters</legend>
+  <div>
+    <label>Your strength: <input id="strength" type="number" min="0" max="20" value="10"> points</label>
+  </div>
+  <div>
+    <label>Weapon: <select id="weapons"></select></label>
+  </div>
+  <div>
+    <label><input id="is_huntress" type="checkbox"> Is Huntress?</label>
+  </div>
+</fieldset>
+
+<div id="output_table"></div>
 
 <script>
+
+document.head.appendChild(
+  document.querySelector('template.style-placeholder').content
+);
 
 /**
  * Generates a melee weapon template using the given parameters.
@@ -314,6 +312,3 @@ document.getElementById('swarm_form').addEventListener('change', event => {
 document.getElementById('swarm_form').dispatchEvent(new Event('change'));
 
 </script>
-</body>
-
-</html>
