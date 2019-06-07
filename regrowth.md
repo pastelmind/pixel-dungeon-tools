@@ -1,32 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
+---
+layout: post
+title: Wand of Regrowth Simulator
+---
+<style>
+  #canvas {
+    border: 2px dotted black;
+    margin: auto;
+  }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Wand of Regrowth Simulator</title>
-  <style>
-    #canvas {
-      border: 2px dotted black;
-      margin: auto;
-    }
+  #canvas:hover {
+    cursor: pointer;
+  }
+</style>
 
-    #canvas:hover {
-      cursor: pointer;
-    }
-  </style>
-</head>
+This tool helps you farm dewdrops and seeds with a Wand of Regrowth.
 
-<body>
-  <p>This tool helps you farm dewdrops and seeds with a Wand of Regrowth.</p>
-  <p>The little number inside each tile equals the number of high grass patches that will spawn when you zap that tile.</p>
-  <p>Click on a tile to edit the dungeon layout.</p>
-  <label>Wand of Regrowth upgrade level: <input type="number" min="0" max="15" value="0" id="wand_level"></label>
-  <p>Maximum # of high grass spawnable: <output for="wand_level" id="max_high_grass"></output></p>
-  <div class="canvas-wrapper">
-    <canvas id="canvas"></canvas>
-  </div>
+The little number inside each tile equals the number of high grass patches that will spawn when you zap that tile.
+
+Click on a tile to edit the dungeon layout.
+
+<label>Wand of Regrowth upgrade level: <input type="number" min="0" max="15" value="0" id="wand_level"></label>
+
+Maximum # of high grass spawnable: <output for="wand_level" id="max_high_grass"></output>
+
+<div class="canvas-wrapper">
+  <canvas id="canvas"></canvas>
+</div>
 
 <script>
 
@@ -311,6 +310,3 @@ wallTileImage.addEventListener('load', () => {
 });
 
 </script>
-</body>
-
-</html>
