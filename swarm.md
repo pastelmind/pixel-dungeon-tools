@@ -20,7 +20,7 @@
     }
 
     #output_table tr:nth-child(2n) {
-      background-color: #ddd;
+      background-color: #888;
     }
   </style>
 </template>
